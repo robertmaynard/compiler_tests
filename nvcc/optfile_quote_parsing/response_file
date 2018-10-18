@@ -1,0 +1,3 @@
+-std=c++11
+-DPACKED_DEFINE="__attribute__((packed))"
+-DUSING_RT="using rt"
