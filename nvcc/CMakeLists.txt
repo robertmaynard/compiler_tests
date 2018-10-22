@@ -4,7 +4,11 @@ project(nvcc_ VERSION 0.1.0 LANGUAGES C CXX CUDA)
 enable_testing()
 include(../cmake/compiler_tests.cmake)
 
+#Tests that need to be compiled and a test run
+add_compile_run_test(CUDA copy_if_with_large_obj)
 
+
+#Tests that just need to be compiled
 add_compile_test(CUDA argument_pack)
 add_compile_test(CUDA at_c)
 add_compile_test(CUDA curand_thrust_separable_comp)
