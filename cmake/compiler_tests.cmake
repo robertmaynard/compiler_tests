@@ -39,8 +39,10 @@ function(add_compile_test lang dir)
   set(build_name ${name})
   if(result EQUAL 0)
     set(build_name "${build_name}_builds")
+    set(test_label "BUILDS")
   else()
     set(build_name "${build_name}_fails")
+    set(test_label "FAILS")
   endif()
 
   add_test(NAME ${build_name}
@@ -50,5 +52,6 @@ function(add_compile_test lang dir)
            )
 
   set_tests_properties(${build_name} PROPERTIES WILL_FAIL ${result})
+  set_tests_properties(${build_name} PROPERTIES LABELS ${test_label} )
 
 endfunction()
