@@ -24,7 +24,12 @@ function(get_expected_result lang src_dir var)
 endfunction()
 
 
-function(add_compile_test lang dir)
+function(build_and_test_directory lang dir)
+
+  set(options TESTABLE)
+  set(oneValueArgs )
+  set(multiValueArgs )
+  cmake_parse_arguments(CT "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   set(name ${dir})
   set(src_dir "${CMAKE_CURRENT_SOURCE_DIR}/${name}/")
@@ -33,11 +38,11 @@ function(add_compile_test lang dir)
   #determine if the test is expected to compile or fail to build. We use
   #this information to built the test name to make it clear to the user
   #what a 'passing' test means
-  set(result 1)
-  get_expected_result(${lang} ${src_dir} result)
+  set(retcode 1)
+  get_expected_result(${lang} ${src_dir} retcode)
 
   set(build_name ${name})
-  if(result EQUAL 0)
+  if(retcode EQUAL 0)
     set(build_name "${build_name}_builds")
     set(test_label "BUILDS")
   else()
@@ -45,13 +50,34 @@ function(add_compile_test lang dir)
     set(test_label "FAILS")
   endif()
 
+  if(CT_TESTABLE)
+  add_test(NAME ${name}_compile
+           COMMAND ${CMAKE_CTEST_COMMAND}
+           --build-and-test ${src_dir} ${build_dir}
+           --build-generator ${CMAKE_GENERATOR}
+           )
+  add_test(NAME ${build_name}
+           COMMAND ${build_dir}/${name}
+           )
+  set_tests_properties(${name}_compile PROPERTIES FIXTURES_SETUP ${name})
+  set_tests_properties(${build_name} PROPERTIES FIXTURES_REQUIRED ${name})
+
+  else()
   add_test(NAME ${build_name}
            COMMAND ${CMAKE_CTEST_COMMAND}
            --build-and-test ${src_dir} ${build_dir}
            --build-generator ${CMAKE_GENERATOR}
            )
+  endif()
 
-  set_tests_properties(${build_name} PROPERTIES WILL_FAIL ${result})
+  set_tests_properties(${build_name} PROPERTIES WILL_FAIL ${retcode})
   set_tests_properties(${build_name} PROPERTIES LABELS ${test_label} )
+endfunction()
 
+function(add_compile_test lang dir)
+  build_and_test_directory(${lang} ${dir})
+endfunction()
+
+function(add_compile_run_test lang dir)
+  build_and_test_directory(${lang} ${dir} TESTABLE)
 endfunction()
