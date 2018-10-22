@@ -6,4 +6,5 @@ include(../cmake/compiler_tests.cmake)
 
 
 add_compile_test(CUDA at_c)
+add_compile_test(CUDA multi_std_compile_flags)
 add_compile_test(CUDA optfile_quote_parsing)
