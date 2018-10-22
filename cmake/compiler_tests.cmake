@@ -16,9 +16,13 @@ function(get_expected_result lang src_dir var)
 
   #load up the result
   file(READ ${result_path} result)
-  set(${var} ${result} PARENT_SCOPE)
 
+  #convert the result string which might have a newline character into a pure
+  #number by grabbing the first character
+  string(SUBSTRING "${result}" 0 1 result)
+  set(${var} ${result} PARENT_SCOPE)
 endfunction()
+
 
 function(add_compile_test lang dir)
 
@@ -26,19 +30,12 @@ function(add_compile_test lang dir)
   set(src_dir "${CMAKE_CURRENT_SOURCE_DIR}/${name}/")
   set(build_dir "${CMAKE_CURRENT_BINARY_DIR}/${name}/")
 
-  #need to make sure the build_dir exists otherwise the configure
-  #stage fails for some reason, even though -B supports making non-existent
-  #directories
-  file(MAKE_DIRECTORY ${build_dir})
-
-
   #determine if the test is expected to compile or fail to build. We use
   #this information to built the test name to make it clear to the user
   #what a 'passing' test means
   set(result 1)
   get_expected_result(${lang} ${src_dir} result)
 
-  set(configure_name "${name}_configure")
   set(build_name ${name})
   if(result EQUAL 0)
     set(build_name "${build_name}_builds")
@@ -46,21 +43,12 @@ function(add_compile_test lang dir)
     set(build_name "${build_name}_fails")
   endif()
 
-  add_test(
-    NAME ${configure_name}
-    COMMAND ${CMAKE_COMMAND} -B${build_dir} -H${src_dir}
-    WORKING_DIRECTORY ${build_dir}
-    )
+  add_test(NAME ${build_name}
+           COMMAND ${CMAKE_CTEST_COMMAND}
+           --build-and-test ${src_dir} ${build_dir}
+           --build-generator ${CMAKE_GENERATOR}
+           )
 
-
-  add_test(
-    NAME ${build_name}
-    COMMAND "${CMAKE_COMMAND}" --build ${build_dir}
-    WORKING_DIRECTORY ${build_dir}
-    )
-
-  set_tests_properties(${configure_name} PROPERTIES FIXTURES_SETUP ${name})
-  set_tests_properties(${build_name} PROPERTIES FIXTURES_REQUIRED ${name})
   set_tests_properties(${build_name} PROPERTIES WILL_FAIL ${result})
 
 endfunction()
