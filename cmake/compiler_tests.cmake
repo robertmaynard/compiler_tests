@@ -31,25 +31,36 @@ function(add_compile_test lang dir)
   #directories
   file(MAKE_DIRECTORY ${build_dir})
 
+
+  #determine if the test is expected to compile or fail to build. We use
+  #this information to built the test name to make it clear to the user
+  #what a 'passing' test means
+  set(result 1)
+  get_expected_result(${lang} ${src_dir} result)
+
+  set(configure_name "${name}_configure")
+  set(build_name ${name})
+  if(result EQUAL 0)
+    set(build_name "${build_name}_builds")
+  else()
+    set(build_name "${build_name}_fails")
+  endif()
+
   add_test(
-    NAME ${name}_configure
+    NAME ${configure_name}
     COMMAND ${CMAKE_COMMAND} -B${build_dir} -H${src_dir}
     WORKING_DIRECTORY ${build_dir}
     )
 
+
   add_test(
-    NAME ${name}
+    NAME ${build_name}
     COMMAND "${CMAKE_COMMAND}" --build ${build_dir}
     WORKING_DIRECTORY ${build_dir}
     )
 
-  set_tests_properties(${name}_configure PROPERTIES FIXTURES_SETUP ${name})
-  set_tests_properties(${name} PROPERTIES FIXTURES_REQUIRED ${name})
-
-  #setup up the rules on if we expect the test to pass or fail
-  set(result 1)
-  get_expected_result(${lang} ${src_dir} result)
-  message(STATUS "result for ${name} is: ${result}")
-  set_tests_properties(${name} PROPERTIES WILL_FAIL ${result})
+  set_tests_properties(${configure_name} PROPERTIES FIXTURES_SETUP ${name})
+  set_tests_properties(${build_name} PROPERTIES FIXTURES_REQUIRED ${name})
+  set_tests_properties(${build_name} PROPERTIES WILL_FAIL ${result})
 
 endfunction()
