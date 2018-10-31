@@ -8,9 +8,12 @@
 
 // we could vary M & N to find the perf sweet spot
 
-struct estimate_pi : 
+struct estimate_pi :
     public thrust::unary_function<unsigned int, float>
 {
+
+  estimate_pi() = default;
+
   __device__
   float operator()(unsigned int thread_id)
   {
