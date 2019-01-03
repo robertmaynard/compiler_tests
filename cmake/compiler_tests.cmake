@@ -26,7 +26,7 @@ endfunction()
 
 function(build_and_test_directory lang dir)
 
-  set(options TESTABLE)
+  set(options RUNABLE)
   set(oneValueArgs )
   set(multiValueArgs )
   cmake_parse_arguments(CT "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -50,7 +50,7 @@ function(build_and_test_directory lang dir)
     set(test_label "FAILS")
   endif()
 
-  if(CT_TESTABLE)
+  if(CT_RUNABLE)
   add_test(NAME ${name}_compile
            COMMAND ${CMAKE_CTEST_COMMAND}
            --build-and-test ${src_dir} ${build_dir}
@@ -79,5 +79,5 @@ function(add_compile_test lang dir)
 endfunction()
 
 function(add_compile_run_test lang dir)
-  build_and_test_directory(${lang} ${dir} TESTABLE)
+  build_and_test_directory(${lang} ${dir} RUNABLE)
 endfunction()
