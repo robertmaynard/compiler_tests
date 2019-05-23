@@ -3,16 +3,23 @@
 function(get_expected_result lang src_dir var)
 
   set(version_full ${CMAKE_${lang}_COMPILER_VERSION})
-  string(REGEX REPLACE "([0-9]+)\\.([0-9]+).*" "\\1" version_major ${version_full})
-  string(REGEX REPLACE "([0-9]+)\\.([0-9]+).*" "\\2" version_minor ${version_full})
+  string(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\1" version_major ${version_full})
+  string(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\2" version_minor ${version_full})
+  string(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\3" version_patch ${version_full})
+
+  set(version_with_patch "${version_major}.${version_minor}.${version_patch}")
   set(version "${version_major}.${version_minor}")
 
   #see if an explicit override for this version exists
-  set(override_path "${src_dir}/result.${version}")
+  set(override_path1 "${src_dir}/result.${version_with_patch}")
+  set(override_path2 "${src_dir}/result.${version}")
   set(result_path "${src_dir}/result")
-  if(EXISTS override_path)
-    set(result_path ${override_path})
+  if(EXISTS ${override_path1})
+    set(result_path ${override_path1})
+  elseif(EXISTS ${override_path2})
+    set(result_path ${override_path2})
   endif()
+  message(STATUS "result_path: ${result_path}")
 
   #load up the result
   file(READ ${result_path} result)
